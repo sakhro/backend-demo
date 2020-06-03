@@ -1,0 +1,23 @@
+cache:
+  paths:
+  - node_modules/
+
+stages:
+  - heroku
+
+build_develop:
+  stage: heroku
+  script:
+    - gem install dpl
+    - dpl --provider=heroku --app=ps-backend-develop --api-key=$HEROKU_API_KEY
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'develop'
+
+build_staging:
+  stage: heroku
+  script:
+    - gem install dpl
+    - dpl --provider=heroku --app=ps-backend-staging --api-key=$HEROKU_API_KEY
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9](\.[0-9])*\-rc\.\d{1,2}$/'
+    

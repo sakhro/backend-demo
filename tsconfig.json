@@ -1,0 +1,47 @@
+{
+	"compilerOptions": {
+		"lib": [
+			"esnext",
+			"dom"
+		] /* Specify library files to be included in the compilation. */,
+		"outDir": "build" /* Redirect output structure to the directory. */,
+		"rootDir": "src",
+		"strict": true,
+		"baseUrl": ".",
+		"downlevelIteration": true,
+		"esModuleInterop": true,
+		"resolveJsonModule": true,
+		"paths": {
+			"$services/*": [
+				"./src/services/*"
+			],
+			"$constants/*": [
+				"./src/constants/*"
+			],
+			"$generated/*": [
+				"./src/generated/*"
+			],
+			"$helpers/*": [
+				"./src/helpers/*"
+			],
+			"$modules/*": [
+				"./src/modules/*"
+			],
+			"$rules/*": [
+				"./src/rules/*"
+			],
+			"$types/*": [
+				"./src/types/*"
+			],
+			"$config/*": [
+				"./src/config/*"
+			],
+		},
+	},
+	"include": [
+		"src/**/*",
+	],
+	"exclude": [
+		"node_modules"
+	]
+}

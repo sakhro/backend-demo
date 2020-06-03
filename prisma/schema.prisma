@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PRISMA_POSTGRESQL_URL")
+}
+
+enum CountryCode {
+  UA
+  PL
+  CZ
+  IT
+}
+
+enum CurrencyCode {
+  UAH
+  PLN
+  CZK
+  EUR
+}
+
+enum CarriageFrequency {
+  EveryNDay
+  Custom
+}
+
+model Company {
+  id         String      @default(cuid()) @id
+  name       String      @unique
+  isDisabled Boolean     @default(false)
+  buses      Bus[]
+  users      User[]      @relation(references: [id])
+  routes     Route[]
+  passengers Passenger[] @relation("Passengers", references: [id])
+  blacklist  Passenger[] @relation("Blacklist", references: [id])
+}
+
+// @@index([name])
+model City {
+  id                           String      @default(cuid()) @id
+  country                      CountryCode
+  name                         String      @unique
+  stops                        Stop[]
+  asArrivalOrderCity           Order[]     @relation("OrderArrivalCity")
+  asDepartureOrderCity         Order[]     @relation("OrderDepartureCity")
+  asSourceDefaultDepartureCity Source[]
+}
+
+model Passenger {
+  id          String    @default(cuid()) @id
+  lastName    String
+  firstName   String
+  password    String?
+  phone       String    @unique
+  email       String?   @unique
+  orders      Order[]
+  companies   Company[] @relation("Passengers", references: [id])
+  inBlacklist Company[] @relation("Blacklist", references: [id])
+}
+
+model Carriage {
+  id              String            @default(cuid()) @id
+  name            String
+  order           Int               @default(autoincrement())
+  phones          String[]
+  frequency       CarriageFrequency
+  startDate       DateTime?
+  nDay            Int?
+  // We can't set DateTime as scalar list probably because of prisma bug
+  customDays      String[]
+  route           Route?            @relation(fields: [routeId], references: [id])
+  routeId         String?
+  latitude        Float?
+  longitude       Float?
+  coordsUpdatedAt DateTime?
+}
+
+model Segment {
+  id              String  @default(cuid()) @id
+  // We need optional price because of automatic segment generation
+  price           Price?  @relation(fields: [priceId], references: [id])
+  priceId         String?
+  route           Route   @relation(fields: [routeId], references: [id])
+  routeId         String
+  departureStop   Stop    @relation("SegmentDepartureStop", fields: [departureStopId], references: [id])
+  departureStopId String
+  arrivalStop     Stop    @relation("SegmentArrivalStop", fields: [arrivalStopId], references: [id])
+  arrivalStopId   String
+}
+
+model Price {
+  id       String       @default(cuid()) @id
+  amount   Float
+  currency CurrencyCode
+  segment  Segment
+}
+
+model Bus {
+  id                 String        @default(cuid()) @id
+  seatsQty           Int
+  registrationNumber String        @unique
+  brand              String
+  model              String
+  company            Company       @relation(fields: [companyId], references: [id])
+  companyId          String
+  RouteByDate        RouteByDate[]
+}
+
+// @@index([date])
+// @@index([date, stopId])
+model StopByDate {
+  id         String   @default(cuid()) @id
+  date       DateTime
+  isDisabled Boolean
+  stop       Stop     @relation(fields: [stopId], references: [id])
+  stopId     String
+}
+
+// @@index([date])
+// @@index([date, sourceId])
+model SourceByDate {
+  id          String   @default(cuid()) @id
+  date        DateTime
+  ordersLimit Int
+  source      Source   @relation(fields: [sourceId], references: [id])
+  sourceId    String
+}
